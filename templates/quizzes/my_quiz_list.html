@@ -1,0 +1,187 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/my_tests.css' %}">
+    <title>Document</title>
+</head>
+<body>
+    <!--  -->
+    <div class="modal" id="CreateTestModal" tabindex="-1" role="dialog" aria-labelledby="CreateModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <form id="test-form">{% csrf_token %}
+                    <div class="modal-body">
+                        <p class="modal-title m-2">Title of the new test</p>
+                        {{create_form.title}}
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Description</p>
+                        {{create_form.description}}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Create Test</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!--  -->
+    <div class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">Navbar</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">Link</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Dropdown
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <div class="dropdown-divider"></div>
+                <a class="dropdown-item" href="#">Something else here</a>
+                </div>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
+            </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            <button type="button" class="btn btn-primary m-3" data-toggle="modal" data-target="#CreateTestModal">Create Test</button>
+            </form>
+        </div>
+    </div>
+    <div class="list-group test-list-wrapper m-5" id="tests_list">
+    {% for test in tests %}
+    <!--  -->
+        <div class="modal" id="UpdateTestModal{{test.id}}" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form class="update-form" action="{% url 'my-test-update' test.id %}" method="POST" id="testUpdateForm{{test.id}}">{% csrf_token %}
+                        <div class="modal-body">
+                            <p class="modal-title m-2">Title of the new test</p>
+                            {{update_form.title}}
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <p class="modal-title m-2">Description</p>
+                            {{update_form.description}}
+                        </div>
+                        <div class="modal-body">
+                            <p class="modal-title m-2">Is Active</p>
+                            {{update_form.is_active}}
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary" form="testUpdateForm{{test.id}}">Update Test</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    <!--  -->
+        <div class="test-list-item" id="test{{test.id}}">
+            <div class="test-title"><a href="{% url 'question-list' test.id %}">{{test.title}}</a></div>
+            <button data-url="{% url 'my-test-update' test.id %}" data-id="{{test.id}}" class="btn btn-success m-3 update-button">Update</button>
+            <div data-id="{{test.id}}" data-url="{% url 'my-test-delete' test.id %}" class="btn btn-danger delete-button m-3">Delete</div>
+        </div>
+    {% endfor %}
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <script>
+        $(document.body).on('click', '.update-button', function(e){
+            modal_id = $(this).data('id');
+            update_url = $(this).data('url');
+            modal_window = $(`#UpdateTestModal${modal_id}`);
+            modal_form = $(`#testUpdateForm${modal_id}`);
+            $.ajax({
+                type: "GET",
+                url: update_url,
+                data: {test_id: parseInt(modal_id)},
+                success: function (response) {
+                    console.log(response);
+                    modal_form[0][1].value = response['test_title'];
+                    modal_form[0][2].value = response['test_description'];
+                    modal_form[0][3].checked = response['test_is_active'];
+                }
+            })
+            modal_window.modal('show');
+        })
+
+        $("#test-form").submit(function (e) {
+            e.preventDefault();
+
+            var serialized_data = $(this).serialize();
+            $.ajax({
+                type: "POST",
+                url: "{% url 'my-test-create' %}",
+                data: serialized_data,
+                success: function (response) {
+                    $("#test-form").trigger('reset');
+                    $("#id_title").focus();
+
+                    var instance = JSON.parse(response["new_test"]);
+                    var fields = instance[0]["fields"];
+
+                    var test_detail_url = response['detail_url'];
+                    var test_update_url = response['update_url'];
+                    var test_delete_url = response['delete_url'];
+                    
+                    $("#tests_list").prepend(`
+                        <div class="test-list-item" id="test${instance[0].pk}">
+                            <div class="test-title"><a href="${test_detail_url}">${fields["title"]||""}</a></div>
+                            <a class="btn btn-success m-3" href="${test_update_url}">Update</a>
+                            <div class="btn btn-danger delete-button m-3" data-id="${instance[0].pk}" data-url="${test_delete_url}">Delete</div>
+                        </div>
+                    `)
+                },
+                error: function (response) {
+                    alert(response["responseJSON"]["error"]);
+                }
+            })
+        });
+
+        var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
+
+        $(document.body).on('click', '.delete-button', function(e){
+            e.stopPropagation();
+            var delete_url = $(this).data('url');
+            var data_id = $(this).data('id');
+            $.ajax({
+                type: "POST",
+                url: `${delete_url}`,
+                data: {
+                    csrfmiddlewaretoken: csrfToken,
+                    test_id: data_id
+                },
+                dataType: 'json',
+                success: function() {
+                    $(`#test${data_id}`).remove();
+                }
+            })
+        })
+    </script>
+</body>
+</html>

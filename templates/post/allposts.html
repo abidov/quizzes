@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Posts</title>
+</head>
+<body>
+    {% for post in object_list %}
+        <div>
+            <h2>{{ post.id }}</h2>
+            <p>POST:</p>
+            <p>{{ post.title }}</p>
+            <p>{{ post.text }}</p>
+            <p>{{ post.author }}</p>
+            <p>{{ post.created }}</p>
+            <p>{{ post.updated }}</p>
+            <a href={% url 'post-like-create' post.id %}>Like</a>
+            <p>COMMENTS:
+                {% for comment in post.comments.all %}
+                    <hr>
+                    {{ comment.author }}
+                    {{ comment.text }}
+                    {{ comment.created }}
+                    {{ comment.updated }}
+                    <hr>
+                {% endfor %}
+            </p>
+        </div>
+    {% endfor %}
+</body>
+</html>
