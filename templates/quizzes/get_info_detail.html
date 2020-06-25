@@ -1,64 +1,22 @@
 {% extends 'base.html' %}
-{% block extra_head %}
-<style>
-    body{
-	background-color: #efefef !important;
-}
-.single-blog{
-	box-shadow: 0px 0px 20px 1px rgba(0,0,0,0.2);
-	padding: 10px;
-	margin-top: 30px;
-    background-color: #fff;
-    text-align: center;
-}
-
-.single-blog img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.blog-meta{
-	font-size: 14px;
-	margin-bottom: 2px;
-}
-.single-blog span{
-	float: right;
-	font-size: 12px;
-	color: cornflowerblue;
-}
-.blog-text{
-	font-size: 14px;
-    text-align: center;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    white-space: -moz-pre-wrap !important;
-    word-wrap: break-word;
-    white-space : normal;
-}
-.single-blog h2{
-	margin-top: 10px;
-	font-size: 16px;
-	color: #007bff;
-}
-.single-blog h2 a{
-	text-decoration: none;
-}
-
-</style>
-{% endblock %}
 {% block content %}
-<div class="tests m-5 row" id="tests_list">
-    {% for user_answer in user_answers %}
-        <div class="col-md-4" id="test{{user_answer.id}}">
-            <div class="single-blog">
-                <p class="blog-meta">
-                    By {{user_answer.user}}
-                </p>
-                <h2>{{user_answer.question.problem}}</h2>
-                <p class="blog-text">Users answer is: {{user_answer.answer.text}}</p>
-            </div>
-        </div>
+<h1 class="text-center">{{user.username}}'s result to the "{{test.title}}" test</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">User</th>
+            <th scope="col">Question</th>
+            <th scope="col">Answer</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for user_answer in user_answers %}
+            <tr>
+                <th scope="row">{{user_answer.user.username}}</th>
+                <td>{{user_answer.question.problem}}</td>
+                <td>{{user_answer.answer.text}}</td>
+            </tr>
     {% endfor %}
-</div>
+    </tbody>
+</table>
 {% endblock content %}

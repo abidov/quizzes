@@ -1,65 +1,25 @@
 {% extends 'base.html' %}
-{% block extra_head %}
-<style>
-    body{
-	background-color: #efefef !important;
-}
-.single-blog{
-	box-shadow: 0px 0px 20px 1px rgba(0,0,0,0.2);
-	padding: 10px;
-	margin-top: 30px;
-    background-color: #fff;
-    text-align: center;
-}
-
-.single-blog img{
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.blog-meta{
-	font-size: 14px;
-	margin-bottom: 2px;
-}
-.single-blog span{
-	float: right;
-	font-size: 12px;
-	color: cornflowerblue;
-}
-.blog-text{
-	font-size: 14px;
-    text-align: center;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    white-space: -moz-pre-wrap !important;
-    word-wrap: break-word;
-    white-space : normal;
-}
-.single-blog h2{
-	margin-top: 10px;
-	font-size: 16px;
-	color: #007bff;
-}
-.single-blog h2 a{
-	text-decoration: none;
-}
-
-</style>
-{% endblock %}
 {% block content %}
-<div class="tests m-5 row" id="tests_list">
-    {% for test_result in test_results %}
-        <div class="col-md-4" id="test{{test_result.id}}">
-            <div class="single-blog">
-                <p class="blog-meta">
-                    By {{test_result.user}}
-                    <span>{{test_result.created}}</span>
-                </p>
-                <h2><a href="{% url 'test-info-detail' test_id=test.id user_id=test_result.user.id %}">{{test_result.test.title}}</a></h2>
-                <p class="blog-text">Correct answers: {{test_result.correct_answers}}</p>
-            </div>
-        </div>
-    {% endfor %}
+<h1 class="text-center">Results of "{{test.title}}" test</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">User</th>
+            <th scope="col">Test</th>
+            <th scope="col">Correct Answers</th>
+            <th scope="col">Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for test_result in test_results %}
+            <tr>
+                <th scope="row"><a href="{% url 'test-info-detail' test_id=test.id user_id=test_result.user.id %}">{{test_result.user.username}}</a></th>
+                <td>{{test_result.test.title}}</td>
+                <td>{{test_result.correct_answers}}</td>
+                <td>{{test_result.created}}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
 </div>
 {% endblock content %}
