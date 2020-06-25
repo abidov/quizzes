@@ -9,16 +9,17 @@ from .forms import TestCreateForm, TestUpdateForm, QuestionCreateForm, AnswerCre
 
 
 @login_required(login_url='/accounts/login/')
-def test_list(request):
+def my_test_list(request):
     create_form = TestCreateForm()
     update_form = TestUpdateForm()
     tests = Test.objects.filter(user=request.user)
     return render(request, 'quizzes/my_quiz_list.html', locals())
 
 
-def test_create(request):
+@login_required(login_url='/accounts/login/')
+def my_test_create(request):
     if request.method == 'POST':
-        form = TestCreateForm(request.POST)
+        form = TestCreateForm(request.POST, request.FILES)
         if form.is_valid():
             form.instance.user = request.user
             test_instance = form.save()
@@ -32,19 +33,20 @@ def test_create(request):
     return JsonResponse({'error': 'not ajax request'}, status=400)
 
 
-def test_update(request, test_id):
+@login_required(login_url='/accounts/login/')
+def my_test_update(request, test_id):
     test = get_object_or_404(Test, pk=test_id, user=request.user)
     if request.method == 'GET':
         return JsonResponse({'test_title': test.title, 'test_description': test.description, 'test_is_active': test.is_active}, status=200)
     elif request.method == 'POST':
-        form = TestUpdateForm(request.POST, instance=test)
+        form = TestUpdateForm(request.POST, request.FILES, instance=test)
         if form.is_valid():
             form.save()
-            return redirect('my-test-list')
-        return render(request, 'quizzes/my_quiz_update.html', locals())
+        return redirect('my-test-list')
 
 
-def test_delete(request, test_id):
+@login_required(login_url='/accounts/login/')
+def my_test_delete(request, test_id):
     if request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
         test.delete()
@@ -56,13 +58,18 @@ def test_delete(request, test_id):
 def question_list(request, test_id):
     test = get_object_or_404(Test, pk=test_id, user=request.user)
     question_form = QuestionCreateForm()
+    question_update_form = QuestionCreateForm()
     answer_form = AnswerCreateForm()
+    answer_update_form = AnswerCreateForm()
     return render(request, 'quizzes/my_quiz_detail.html', {'test': test,
                                                            'question_form': question_form,
+                                                           'question_update_form': question_update_form,
                                                            'answer_form': answer_form,
+                                                           'answer_update_form': answer_update_form,
                                                            })
 
 
+@login_required(login_url='/accounts/login/')
 def question_create(request, test_id):
     if request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
@@ -71,6 +78,8 @@ def question_create(request, test_id):
         if question_form.is_valid():
             question_form.instance.test = test
             question_instance = question_form.save()
+            test.questions_id.append(question_instance.id)
+            test.save()
             delete_url = reverse('question-delete', kwargs={'test_id': test_id, 'question_id': question_instance.id})
             update_url = reverse('question-update', kwargs={'test_id': test_id, 'question_id': question_instance.id})
             answer_create_url = reverse('answer-create', kwargs={'test_id': test_id, 'question_id': question_instance.id})
@@ -81,12 +90,12 @@ def question_create(request, test_id):
     return JsonResponse({'error': 'not ajax request'}, status=400)
 
 
+@login_required(login_url='/accounts/login/')
 def question_update(request, test_id, question_id):
     test = get_object_or_404(Test, pk=test_id, user=request.user)
     question = get_object_or_404(Question, pk=question_id, test=test)
     if request.method == 'GET':
-        question_form = QuestionCreateForm(instance=question)
-        return render(request, 'quizzes/question_update.html', locals())
+        return JsonResponse({'question_problem': question.problem}, status=200)
     elif request.method == 'POST':
         question_form = QuestionCreateForm(request.POST, instance=question)
         if question_form.is_valid():
@@ -95,15 +104,19 @@ def question_update(request, test_id, question_id):
         return render(request, 'quizzes/question_update.html', locals())
 
 
+@login_required(login_url='/accounts/login/')
 def question_delete(request, test_id, question_id):
     if request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
         question = get_object_or_404(Question, pk=question_id, test=test)
         question.delete()
+        test.questions_id.remove(question_id)
+        test.save()
         return JsonResponse({'result': 'ok'}, status=200)
     return JsonResponse({'error': 'not ajax request'}, status=400)
 
 
+@login_required(login_url='/accounts/login/')
 def answer_create(request, test_id, question_id):
     if request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
@@ -123,15 +136,14 @@ def answer_create(request, test_id, question_id):
     return JsonResponse({'error': 'not ajax request'})
 
 
+@login_required(login_url='/accounts/login/')
 def answer_update(request, test_id, answer_id):
     if request.method == 'GET':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
         questions = test.questions.all()
         answer = get_object_or_404(Answer, pk=answer_id)
         if answer.question in questions:
-            form = AnswerCreateForm(instance=answer)
-            return render(request, 'quizzes/answer_update.html', locals())
-        return redirect('my-test-detail', test_id)
+            return JsonResponse({'answer_text': answer.text, 'answer_is_correct': answer.is_correct}, status=200)
     elif request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
         questions = test.questions.all()
@@ -144,6 +156,7 @@ def answer_update(request, test_id, answer_id):
             return render(request, 'quizzes/answer_update.html', locals())
 
 
+@login_required(login_url='/accounts/login/')
 def answer_delete(request, test_id, answer_id):
     if request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
@@ -157,17 +170,21 @@ def answer_delete(request, test_id, answer_id):
     return JsonResponse({'error': 'not ajax request'}, status=400)
 
 
-class TestListView(View):
-
-    def get(self, request):
-        tests = get_list_or_404(Test, is_active=True)
-        return render(request, 'quizzes/quiz_list.html', locals())
-
-
-class TestDetailView(View):
-
-    def get(self, request, test_id):
-        test = get_object_or_404(Test, pk=test_id, is_active=True)
-        return render(request, 'quizzes/quiz_detail.html', locals())
+@login_required(login_url='/accounts/login/')
+def check_answer(request, answer_id):
+    if request.is_ajax() and request.method == 'GET':
+        answer = get_object_or_404(Answer, pk=answer_id)
+        if answer.is_correct:
+            return JsonResponse({'is_correct': True})
+        return JsonResponse({'is_correct': False})
+    return JsonResponse({'error': 'not ajax request'}, status=400)
 
 
+def tests_list(request):
+    tests = Test.objects.filter(is_active=True)
+    return render(request, 'quizzes/quiz_list.html', locals())
+
+
+def test_detail(request, test_id):
+    test = get_object_or_404(Test, pk=test_id, is_active=True)
+    return render(request, 'quizzes/quiz_detail.html', locals())

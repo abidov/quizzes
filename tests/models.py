@@ -1,14 +1,24 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.urls import reverse
+from django.contrib.postgres.fields import ArrayField
+
+
+class Category(models.Model):
+    title = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.title
 
 
 class Test(models.Model):
+    category = models.ForeignKey(Category, related_name='tests', on_delete=models.CASCADE)
     user = models.ForeignKey(User, related_name='tests', on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     description = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
-    question_quantity = models.IntegerField(default=0)
+    questions_id = ArrayField(models.IntegerField(), null=True, blank=True)
+    image = models.ImageField(upload_to='test_image')
     is_active = models.BooleanField(default=False)
 
     def __str__(self):
@@ -54,6 +64,7 @@ class TestResult(models.Model):
 class UserAnswer(models.Model):
     user = models.ForeignKey(User, related_name='user_answers', on_delete=models.CASCADE)
     test = models.ForeignKey(Test, related_name='user_answers', on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, related_name='user_answers', on_delete=models.CASCADE)
     answer = models.ForeignKey(Answer, related_name='user_answers', on_delete=models.CASCADE)
 
     def __str__(self):
@@ -75,3 +86,4 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'comment: {self.text} of {self.user.username} on {self.test.title}'
+

@@ -15,6 +15,7 @@ class TestCreateForm(forms.ModelForm):
                                                         'placeholder': 'Description',
                                                         'aria-label': 'Description',
                                                         })
+        self.fields['image'].widget.attrs.update({'class': 'form-control-file'})
 
     class Meta:
         model = Test
@@ -41,7 +42,7 @@ class TestUpdateForm(forms.ModelForm):
 
     class Meta:
         model = Test
-        exclude = ['user', 'question_quantity']
+        exclude = ['user', 'question_quantity', 'image', 'category']
 
 
 class QuestionCreateForm(forms.ModelForm):

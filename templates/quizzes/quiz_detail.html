@@ -1,24 +1,18 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-</head>
-<body>
-    <form action="" method="POST" id="gather-result">{% csrf_token %}
+{% extends 'base.html' %}
+{% block head_title %}{{test.title}}{% endblock %}
+{% block content %}
+    <form id="gather-result">{% csrf_token %}
         <h3>{{test.title}}</h3>
+        {{test.questions_id}}
         <ol>
-            {{test.questions.all|length}}
+            {{test.question_quantity}}
             {% for question in test.questions.all %}
             <li>
-                {{question}}
+                {{question.problem}}
                 <ul>
                 {% for answer in question.answers.all %}
                     <li>
-                        <input class="form-check-input" type="radio" name="{{question.id}}" id="answer{{answer.id}}" value="option1">
+                        <input id="answer{{answer.id}}" data-iscorrect="{{answer.is_correct}}" required class="form-check-input" type="radio" name="question{{question.id}}" id="answer{{answer.id}}" value="{{answer.id}}">
                         <label class="form-check-label" for="answer{{answer.id}}">{{answer.text}}</label>
                     </li>
                 {% endfor %}
@@ -28,5 +22,49 @@
         </ol>
         <button type="submit" form="gather-result">Send</button>
     </form>
-</body>
-</html>
+    <span id="score">Score: </span>
+    {% endblock %}
+    {% block javascript %}
+        {{ block.super }}
+        <script>
+            var questions_id = {{test.questions_id}};
+
+            $('#gather-result').on('submit', function (e){
+                e.preventDefault();
+                var checked_answers_id = [];
+                for (var question_id of questions_id){
+                    checked_answers_id.push(getRadioVal(this, `question${question_id}`));
+                }
+                var score = 0;
+                for (var checked_answer_id of checked_answers_id){
+                    if ($(`#answer${checked_answer_id}`).data('iscorrect') == "True") {
+                        score ++;
+                    }
+
+                    // $.ajax({
+                    //     type: "GET",
+                    //     url: `/tests/my/${parseInt(checked_answer_id)}/check_answer/`,
+                    //     success: function (response) {
+                    //         if (response['is_correct']) {
+                    //             score ++;
+                    //         }
+                    //     }
+                    // })
+                }
+                alert(score);
+            });
+
+            function getRadioVal(form, name) {
+                var val;
+                var radios = form.elements[name];
+
+                for (var i=0, len=radios.length; i<len; i++) {
+                    if ( radios[i].checked ) { // radio checked?
+                        val = radios[i].value; // if so, hold its value in val
+                        break; // and break out of for loop
+                    }
+                }
+                return val; // return value of checked radio or undefined if none checked
+            }
+        </script>
+    {% endblock %}

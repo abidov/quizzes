@@ -1,0 +1,100 @@
+body{
+    padding: 0;
+    margin: 0;
+}
+*{
+    box-sizing: border-box;
+}
+.navclass *{
+  margin: 0;
+  padding: 0;
+}
+.navclass ul{
+  list-style: none;
+  background: rgba(57,119,255,1);
+
+}
+.navclass > ul{
+  display: flex;
+  justify-content: center;
+}
+.navclass > ul li a{
+  display: block;
+  background: rgba(57,119,255,1);
+  padding: 25px 30px;
+  font-size: 14px;
+  color: #fff;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+.navclass > ul li{
+  position: relative;
+  border-right: 1px solid #babbbb;
+}
+.navclass > ul li:first-child{
+  border-left: 1px solid #babbbb;
+}
+.navclass > ul li:last-child{
+  border-right: 1px solid #babbbb;
+}
+.navclass li a:hover{
+  background: rgba(0,43,198,1);
+  color: #ffffff;
+  box-shadow: 1px 5px 10px -5px  black;
+  transition: all 0.3s ease;
+}
+.navclass li ul{
+  position: absolute;
+  min-width: 144px;
+  display: none;
+}
+.navclass li > ul li{
+  border: 1px solid #c7c8ca;
+}
+.navclass li > ul li a{
+  padding: 10px;
+  text-transform: none;
+  background: rgba(57,119,255,1);
+}
+.navclass li > ul li ul{
+  position: absolute;
+  right: -150px;
+  top: 0;
+}
+.navclass li:hover > ul{
+  display: block;
+}
+.navclass ul li input{
+    outline: none;
+    padding: 5px 10px;
+    font-size: 16px;
+    margin: 20px 0 20px 15px;
+    /* width: 150px; */
+    border-radius: 25px 0 0 25px;
+    border: none;
+}
+.navclass ul li button{
+    padding: 5px 10px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    margin: 20px 15px;
+    background-color: rgba(15,70,235,1);
+    color: #fff;
+}
+.search-button{
+    border-radius: 0 25px 25px 0;
+    margin-left: -15px !important;
+}
+.navclass ul li button:active{
+    transition: all ease 0.2s;
+    background-color: rgba(47,172,233,1);
+}
+.navclass li:hover{
+  background: rgba(0,43,198,1);
+  color: #ffffff;
+  box-shadow: 1px 5px 10px -5px  black;
+  transition: all 0.3s ease;
+}

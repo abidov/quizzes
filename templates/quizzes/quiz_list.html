@@ -1,6 +1,70 @@
 {% extends 'base.html' %}
+{% block extra_head %}
+<style>
+    body{
+	background-color: #efefef !important;
+}
+.single-blog{
+	box-shadow: 0px 0px 20px 1px rgba(0,0,0,0.2);
+	padding: 10px;
+	margin-top: 30px;
+    background-color: #fff;
+    text-align: center;
+}
+
+.single-blog img{
+    width: 250px;
+    height: 250px;
+    object-fit: cover;
+}
+
+.blog-meta{
+	font-size: 14px;
+	margin-bottom: 2px;
+}
+.single-blog span{
+	float: right;
+	font-size: 12px;
+	color: cornflowerblue;
+}
+.blog-text{
+	font-size: 14px;
+    text-align: center;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap !important;
+    word-wrap: break-word;
+    white-space : normal;
+}
+.single-blog h2{
+	margin-top: 10px;
+	font-size: 16px;
+	color: #007bff;
+}
+.single-blog h2 a{
+	text-decoration: none;
+}
+
+</style>
+{% endblock %}
 {% block content %}
+<div class="tests m-5 row" id="tests_list">
     {% for test in tests %}
-        <p><a href="{% url 'test-detail' test_id=test.id %}">{{test}}</a></p>
+        <div class="col-md-4" id="test{{test.id}}">
+            <div class="single-blog">
+                <p class="blog-meta">
+                    By {{test.user}}
+                    <span>{{test.created}}</span>
+                </p>
+                <img src="{{test.image.url}}" alt="{{test.title}}">
+                <h2><a href="{% url 'question-list' test.id %}">{{test.title}}</a></h2>
+                <p class="blog-text">{{test.description|truncatechars:30}}</p>
+                <p>
+                    <button data-url="{% url 'my-test-update' test.id %}" data-id="{{test.id}}" class="btn btn-success update-button">Update</button>
+                    <div data-id="{{test.id}}" data-url="{% url 'my-test-delete' test.id %}" class="btn btn-danger delete-button">Delete</div>
+                </p>
+            </div>
+        </div>
     {% endfor %}
+</div>
 {% endblock content %}

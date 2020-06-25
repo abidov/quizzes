@@ -1,25 +1,14 @@
+{% extends 'base.html' %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-    <link rel="stylesheet" href="{% static 'css/my_quiz_detail.css' %}">
-    <title>Document</title>
-</head>
-<body>
+{% block content %}
     <!--  -->
     <div class="modal" id="CreateQuestionModal" tabindex="-1" role="dialog" aria-labelledby="CreateModalLabel">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
-                <form id="question-form" action="{% url 'question-create' test.id %}">{% csrf_token %}
+                <form id="question-create-form" action="{% url 'question-create' test.id %}">{% csrf_token %}
                     <div class="modal-body">
                         <p class="modal-title m-2">Question</p>
                         {{question_form.problem}}
-                        </button>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -36,15 +25,53 @@
         <ol id="questions-list">
             {% for question in test.questions.all %}
             <li id="question{{question.id}}">
+                <!--  -->
+                <div class="modal" id="UpdateQuestionModal{{question.id}}" tabindex="-1" role="dialog" aria-labelledby="UpdateQuestionModalLabel">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <form class="question-update-form" action="{% url 'question-update' test_id=test.id question_id=question.id %}" method="POST" id="questionUpdateForm{{question.id}}">{% csrf_token %}
+                                <div class="modal-body">
+                                    <p class="modal-title m-2">Update Question</p>
+                                    {{question_update_form.problem}}
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                    <button type="submit" class="btn btn-primary" form="questionUpdateForm{{question.id}}">Update Question</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <!--  -->
                 {{question.problem}}
-                <div class="btn btn-danger question-delete-button m-3" data-url="{% url 'question-delete' test_id=test.id question_id=question.id %}" data-id={{question.id}}>delete question</div>
-                <a href="{% url 'question-update' test_id=test.id question_id=question.id %}">update question</a>
+                <div class="btn btn-danger question-delete-button m-1" data-url="{% url 'question-delete' test_id=test.id question_id=question.id %}" data-id={{question.id}}>delete question</div>
+                <button data-url="{% url 'question-update' test_id=test.id question_id=question.id %}" data-id="{{question.id}}" class="btn btn-success m-1 question-update-button">Update</button>
                 <ul id="answers-list{{question.id}}">
                 {% for answer in question.answers.all %}
+                    <div class="modal" id="UpdateAnswerModal{{answer.id}}" tabindex="-1" role="dialog" aria-labelledby="UpdateAnswerModalLabel">
+                        <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                                <form class="answer-update-form" action="{% url 'answer-update' test_id=test.id answer_id=answer.id %}" method="POST" id="answerUpdateForm{{answer.id}}">{% csrf_token %}
+                                    <div class="modal-body">
+                                        <p class="modal-title m-2">Update Answer</p>
+                                        {{answer_update_form.text}}
+                                    </div>
+                                    <div class="modal-body">
+                                        <p class="modal-title m-2">Is correct</p>
+                                        {{answer_update_form.is_correct}}
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                        <button type="submit" class="btn btn-primary" form="answerUpdateForm{{answer.id}}">Update Answer</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                     <li id="answer{{answer.id}}" {% if answer.is_correct %} class="list-group-item list-group-item-success" {% else %} class="list-group-item list-group-item-danger">{% endif %}
                         <label class="form-check-label" for="answer{{answer.id}}">{{answer.text}}</label>
-                        <div class="btn btn-danger answer-delete-button m-3" data-url="{% url 'answer-delete' test_id=test.id answer_id=answer.id %}" data-id="{{answer.id}}">delete answer</div>
-                        <a href="{% url 'answer-update' test_id=test.id answer_id=answer.id %}">update answer</a>
+                        <div class="btn btn-danger answer-delete-button m-1" data-url="{% url 'answer-delete' test_id=test.id answer_id=answer.id %}" data-id="{{answer.id}}">delete answer</div>
+                        <button data-url="{% url 'answer-update' test_id=test.id answer_id=answer.id %}" data-id="{{answer.id}}" class="btn btn-success m-1 answer-update-button">Update</button>
                     </li>
                 {% endfor %}
                 </ul>
@@ -56,12 +83,49 @@
             {% endfor %}
         </ol>
     </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
-    <script>
-        $("#question-form").submit(function (e) {
+{% endblock %}
+{% block javascript %}
+    {{ block.super }}
+    <script type="text/javascript">
+        $(document.body).on('click', '.question-update-button', function (e){
+            modal_id = $(this).data('id');
+            update_url = $(this).data('url');
+            modal_window = $(`#UpdateQuestionModal${modal_id}`);
+            modal_form = $(`#questionUpdateForm${modal_id}`);
+            $.ajax({
+                type: "GET",
+                url: update_url,
+                data: {test_id: parseInt(modal_id)},
+                success: function (response) {
+                    modal_form[0][1].value = response['question_problem'];
+                }
+            })
+            modal_window.modal('show');
+        });
+        $(document.body).on('click', '.answer-update-button', function (e){
+            modal_id = $(this).data('id');
+            update_url = $(this).data('url');
+            modal_window = $(`#UpdateAnswerModal${modal_id}`);
+            modal_form = $(`#answerUpdateForm${modal_id}`);
+            console.log(modal_id);
+            $.ajax({
+                type: "GET",
+                url: update_url,
+                data: {test_id: parseInt(modal_id)},
+                success: function (response) {
+                    modal_form[0][1].value = response['answer_text'];
+                    if (response['answer_is_correct']){
+                        modal_form[0][2].checked = true;
+                    }
+                    else {
+                        modal_form[0][2].checked = false;
+                    }
+                    
+                }
+            })
+            modal_window.modal('show');
+        });
+        $("#question-create-form").submit(function (e) {
             e.preventDefault();
             
             var question_form = $(this);
@@ -71,7 +135,7 @@
                 url: question_form.attr('action'),
                 data: question_form.serialize(),
                 success: function (response) {
-                    $("#question-form").trigger('reset');
+                    $("#question-create-form").trigger('reset');
                     $("#id_problem").focus();
 
                     var instance = JSON.parse(response["new_question"]);
@@ -83,9 +147,25 @@
 
                     $("#questions-list").append(`
                     <li id="question${question_id}">
+                        <div class="modal" id="UpdateQuestionModal${question_id}" tabindex="-1" role="dialog" aria-labelledby="UpdateQuestionModalLabel">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <form class="question-update-form" action="${update_url}" method="POST" id="questionUpdateForm${question_id}">{% csrf_token %}
+                                        <div class="modal-body">
+                                            <p class="modal-title m-2">Update Question</p>
+                                            {{question_update_form.problem}}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary" form="questionUpdateForm${question_id}">Update Question</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         ${fields["problem"]||""}
-                        <div class="btn btn-danger question-delete-button m-3" data-id="${question_id}" data-url="${delete_url}">delete question</div>
-                        <a href="${update_url}">update question</a>
+                        <div class="btn btn-danger question-delete-button m-1" data-id="${question_id}" data-url="${delete_url}">delete question</div>
+                        <button data-url="${update_url}" data-id="${question_id}" class="btn btn-success m-1 question-update-button">Update</button>
                         <ul id="answers-list${question_id}">
                         </ul>
                         <form action="${answer_create_url}" data-question-id="${question_id}" id="answer-form${question_id}" class="answer-form">{% csrf_token %}
@@ -94,6 +174,7 @@
                         </form>
                     </li>
                     `);
+                    $("#CreateQuestionModal").modal('hide');
                 }
             })
         });
@@ -124,19 +205,59 @@
                     
                     if (fields['is_correct']) {
                         $(`#answers-list${question_id}`).append(`
+                        <div class="modal" id="UpdateAnswerModal${answer_id}" tabindex="-1" role="dialog" aria-labelledby="UpdateAnswerModalLabel">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <form class="answer-update-form" action="${update_url}" method="POST" id="answerUpdateForm${answer_id}">{% csrf_token %}
+                                        <div class="modal-body">
+                                            <p class="modal-title m-2">Update Answer</p>
+                                            {{answer_update_form.text}}
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="modal-title m-2">Is correct</p>
+                                            {{answer_update_form.is_correct}}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary" form="answerUpdateForm${answer_id}">Update Answer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         <li id="answer${answer_id}" class="list-group-item list-group-item-success">
                             <label class="form-check-label" for="answer${answer_id}">${fields["text"]||""}</label>
-                            <div class="btn btn-danger answer-delete-button m-3" href="${delete_url}" data-url="${delete_url}" data-id="${answer_id}">delete answer</div>
-                            <a href="${update_url}">update answer</a>
+                            <div class="btn btn-danger answer-delete-button m-1" href="${delete_url}" data-url="${delete_url}" data-id="${answer_id}">delete answer</div>
+                            <button data-url="${update_url}" data-id="${answer_id}" class="btn btn-success m-1 answer-update-button">Update</button>
                         </li>
                         `)
                     }
                     else {
                         $(`#answers-list${question_id}`).append(`
+                        <div class="modal" id="UpdateAnswerModal${answer_id}" tabindex="-1" role="dialog" aria-labelledby="UpdateAnswerModalLabel">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <form class="answer-update-form" action="${update_url}" method="POST" id="answerUpdateForm${answer_id}">{% csrf_token %}
+                                        <div class="modal-body">
+                                            <p class="modal-title m-2">Update Answer</p>
+                                            {{answer_update_form.text}}
+                                        </div>
+                                        <div class="modal-body">
+                                            <p class="modal-title m-2">Is correct</p>
+                                            {{answer_update_form.is_correct}}
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                            <button type="submit" class="btn btn-primary" form="answerUpdateForm${answer_id}">Update Answer</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
                         <li id="answer${answer_id}" class="list-group-item list-group-item-danger">
                             <label class="form-check-label" for="answer${answer_id}">${fields["text"]||""}</label>
-                            <div class="btn btn-danger answer-delete-button m-3" href="${delete_url}" data-url="${delete_url}" data-id="${answer_id}">delete answer</div>
-                            <a href="${update_url}">update answer</a>
+                            <div class="btn btn-danger answer-delete-button m-1" href="${delete_url}" data-url="${delete_url}" data-id="${answer_id}">delete answer</div>
+                            <button data-url="${update_url}" data-id="${answer_id}" class="btn btn-success m-1 answer-update-button">Update</button>
                         </li>
                         `)
                     }
@@ -186,7 +307,6 @@
                     $(`#answer${data_id}`).remove();
                 }
             })
-        })
+        });
     </script>
-</body>
-</html>
+{% endblock %}
