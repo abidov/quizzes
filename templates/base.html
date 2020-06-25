@@ -58,14 +58,9 @@
               Categories
             </a>
             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
-              <a class="dropdown-item" href="#">Cat1</a>
+              {% for category in categories %}
+              <a class="dropdown-item" href="{% url 'category-detail' category.id %}">{{category.title}}</a>
+              {% endfor %}
             </div>
           </li>
         </ul>

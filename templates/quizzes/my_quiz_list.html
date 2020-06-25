@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-{% load static %}
 {% block extra_head %}
 <style>
     body{
@@ -14,8 +13,8 @@
 }
 
 .single-blog img{
-    width: 250px;
-    height: 250px;
+    width: 100%;
+    height: 100 %;
     object-fit: cover;
 }
 
@@ -64,7 +63,7 @@
 <div class="modal" id="CreateTestModal" tabindex="-1" role="dialog" aria-labelledby="CreateModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form id="test-create-form">{% csrf_token %}
+            <form id="test-create-form" method="POST" action="{% url 'my-test-create' %}" enctype="multipart/form-data">{% csrf_token %}
                 <div class="modal-body">
                     <p class="modal-title m-2">Category</p>
                     {{create_form.category}}
@@ -131,7 +130,8 @@
             <h2><a href="{% url 'question-list' test.id %}">{{test.title}}</a></h2>
             <p class="blog-text">{{test.description|truncatechars:30}}</p>
             <p>
-                <button data-url="{% url 'my-test-update' test.id %}" data-id="{{test.id}}" class="btn btn-success update-button">Update</button>
+                <a href="{% url 'my-test-update' test.id %}" class="btn btn-success update-button">Update</a>
+                <a href="{% url 'test-info' test.id %}" class="btn btn-success info-button">Get Info</a>
                 <div data-id="{{test.id}}" data-url="{% url 'my-test-delete' test.id %}" class="btn btn-danger delete-button">Delete</div>
             </p>
         </div>
@@ -143,98 +143,6 @@
 {% block javascript %}
     {{ block.super }}
     <script type="text/javascript">
-        $(document.body).on('click', '.update-button', function (e){
-            modal_id = $(this).data('id');
-            update_url = $(this).data('url');
-            modal_window = $(`#UpdateTestModal${modal_id}`);
-            modal_form = $(`#testUpdateForm${modal_id}`);
-            $.ajax({
-                type: "GET",
-                url: update_url,
-                data: {test_id: parseInt(modal_id)},
-                success: function (response) {
-                    modal_form[0][1].value = response['test_title'];
-                    modal_form[0][2].value = response['test_description'];
-                    modal_form[0][3].checked = response['test_is_active'];
-                }
-            })
-            modal_window.modal('show');
-        });
-
-        $("#test-create-form").submit(function (e) {
-            e.preventDefault();
-            var form_data = new FormData(this);
-            var serialized_data = $(this).serialize();
-            $.ajax({
-                type: "POST",
-                url: "{% url 'my-test-create' %}",
-                data: form_data,
-                success: function (response) {
-                    $("#test-create-form").trigger('reset');
-                    $("#id_title").focus();
-
-                    var instance = JSON.parse(response["new_test"]);
-                    var fields = instance[0]["fields"];
-                    console.log(instance);
-                    var test_detail_url = response['detail_url'];
-                    var test_update_url = response['update_url'];
-                    var test_delete_url = response['delete_url'];
-                    
-                    $("#tests_list").prepend(`
-                        <div class="modal" id="UpdateTestModal${instance[0].pk}" tabindex="-1" role="dialog" aria-labelledby="UpdateModalLabel">
-                            <div class="modal-dialog" role="document">
-                                <div class="modal-content">
-                                    <form class="update-form" action="${test_update_url}" method="POST" id="testUpdateForm${instance[0].pk}">{% csrf_token %}
-                                        <div class="modal-body">
-                                            <p class="modal-title m-2">Title of the new test</p>
-                                            {{update_form.title}}
-                                            </button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p class="modal-title m-2">Description</p>
-                                            {{update_form.description}}
-                                        </div>
-                                        <div class="modal-body">
-                                            <p class="modal-title m-2">Is Active</p>
-                                            {{update_form.is_active}}
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                            <button type="submit" class="btn btn-primary" form="testUpdateForm${instance[0].pk}">Update Test</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4" id="test${instance[0].pk}">
-                            <div class="single-blog">
-                                <p class="blog-meta">
-                                    By ${fields['user']}
-                                    <span>${fields['created']}</span>
-                                </p>
-                                <img src="${fields['image']}" alt="${fields['title']}">
-                                <h2><a href="${test_detail_url}">${fields['title']}</a></h2>
-                                <p class="blog-text">${fields['description'].slice(0, 30)}</p>
-                                <p>
-                                    <button data-url="${test_update_url}" data-id="${instance[0].pk}" class="btn btn-success update-button">Update</button>
-                                    <div data-id="${instance[0].pk}" data-url="${test_delete_url}" class="btn btn-danger delete-button">Delete</div>
-                                </p>
-                            </div>
-                        </div>
-                    `);
-                    
-                    $("#CreateTestModal").modal('hide');
-
-                },
-                error: function (response) {
-                    alert(response["responseJSON"]["error"]);
-                },
-                cache: false,
-                contentType: false,
-                processData: false
-            });
-        });
-
         var csrfToken = $("input[name=csrfmiddlewaretoken]").val();
 
         $(document.body).on('click', '.delete-button', function(e){

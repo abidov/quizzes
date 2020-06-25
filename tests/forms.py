@@ -6,6 +6,7 @@ class TestCreateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['category'].widget.attrs.update({'class': 'form-control mr-sm-2'})
         self.fields['title'].widget.attrs.update({'class': 'form-control mr-sm-2',
                                                   'type': 'text',
                                                   'placeholder': 'Title',
@@ -19,13 +20,14 @@ class TestCreateForm(forms.ModelForm):
 
     class Meta:
         model = Test
-        exclude = ['user', 'question_quantity', 'is_active']
+        exclude = ['user', 'is_active']
 
 
 class TestUpdateForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields['category'].widget.attrs.update({'class': 'form-control mr-sm-2'})
         self.fields['title'].widget.attrs.update({'class': 'form-control mr-sm-2',
                                                   'placeholder': 'Title',
                                                   'aria-label': 'Title',
@@ -39,10 +41,11 @@ class TestUpdateForm(forms.ModelForm):
                                                       'placeholder': 'Is Active',
                                                       'aria-label': 'Is Active',
                                                       })
+        self.fields['image'].widget.attrs.update({'class': 'form-control-file'})
 
     class Meta:
         model = Test
-        exclude = ['user', 'question_quantity', 'image', 'category']
+        exclude = ['user', 'questions_id']
 
 
 class QuestionCreateForm(forms.ModelForm):

@@ -10,6 +10,9 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name_plural = "Categories"
+
 
 class Test(models.Model):
     category = models.ForeignKey(Category, related_name='tests', on_delete=models.CASCADE)
@@ -68,7 +71,7 @@ class UserAnswer(models.Model):
     answer = models.ForeignKey(Answer, related_name='user_answers', on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.user.username + ' answer'
+        return self.user.username + ' answer' + ' on ' + self.question.problem
 
 
 class Like(models.Model):

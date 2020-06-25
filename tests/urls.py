@@ -12,14 +12,18 @@ urlpatterns = [
     path('my/<int:test_id>/<int:question_id>/update_question/', views.question_update, name='question-update'),
     path('my/<int:test_id>/<int:question_id>/delete_question/', views.question_delete, name='question-delete'),
 
-
     path('my/<int:test_id>/<int:question_id>/create_answer/', views.answer_create, name='answer-create'),
     path('my/<int:test_id>/<int:answer_id>/update_answer/', views.answer_update, name='answer-update'),
     path('my/<int:test_id>/<int:answer_id>/delete_answer/', views.answer_delete, name='answer-delete'),
-    path('my/<int:answer_id>/check_answer/', views.check_answer, name='answer-check'),
+
+    path('my/<int:test_id>/create_result/', views.score_record, name='result-create'),
+    path('my/<int:test_id>/create/user_answer/', views.user_answer_record, name='user-answer-create'),
 
     path('', views.tests_list, name='test-list'),
     path('<int:test_id>/', views.test_detail, name='test-detail'),
 
+    path('category/<int:category_id>/', views.category_detail, name='category-detail'),
 
+    path('my/<int:test_id>/info', views.test_info, name='test-info'),
+    path('my/<int:test_id>/<int:user_id>/info/detail/', views.test_info_detail, name='test-info-detail'),
 ]

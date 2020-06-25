@@ -49,16 +49,15 @@
 {% endblock %}
 {% block content %}
 <div class="tests m-5 row" id="tests_list">
-    {% for test in tests %}
-        <div class="col-md-4" id="test{{test.id}}">
+    {% for test_result in test_results %}
+        <div class="col-md-4" id="test{{test_result.id}}">
             <div class="single-blog">
                 <p class="blog-meta">
-                    By {{test.user}}
-                    <span>{{test.created}}</span>
+                    By {{test_result.user}}
+                    <span>{{test_result.created}}</span>
                 </p>
-                <img src="{{test.image.url}}" alt="{{test.title}}">
-                <h2><a href="{% url 'test-detail' test.id %}">{{test.title}}</a></h2>
-                <p class="blog-text">{{test.description|truncatechars:30}}</p>
+                <h2><a href="{% url 'test-info-detail' test_id=test.id user_id=test_result.user.id %}">{{test_result.test.title}}</a></h2>
+                <p class="blog-text">Correct answers: {{test_result.correct_answers}}</p>
             </div>
         </div>
     {% endfor %}

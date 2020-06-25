@@ -1,48 +1,49 @@
-from django.views import View
-from django.shortcuts import get_object_or_404, render, redirect, get_list_or_404
+from django.shortcuts import get_object_or_404, render, redirect
+from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.core import serializers
 from django.contrib.auth.decorators import login_required
-from .models import Test, Question, Answer, TestResult
+from django.contrib.auth.models import User
+from .models import Test, Question, Answer, TestResult, UserAnswer, Category
 from .forms import TestCreateForm, TestUpdateForm, QuestionCreateForm, AnswerCreateForm
+from django.views.decorators.http import require_http_methods
 
 
 @login_required(login_url='/accounts/login/')
 def my_test_list(request):
+    categories = Category.objects.all()
     create_form = TestCreateForm()
     update_form = TestUpdateForm()
     tests = Test.objects.filter(user=request.user)
     return render(request, 'quizzes/my_quiz_list.html', locals())
 
 
+@require_http_methods(["POST"])
 @login_required(login_url='/accounts/login/')
 def my_test_create(request):
-    if request.method == 'POST':
-        form = TestCreateForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.instance.user = request.user
-            test_instance = form.save()
-            detail_url = reverse('question-list', kwargs={'test_id': test_instance.id})
-            update_url = reverse('my-test-update', kwargs={'test_id': test_instance.id})
-            delete_url = reverse('my-test-delete', kwargs={'test_id': test_instance.id})
-            serialized_instance = serializers.serialize('json', [test_instance])
-            return JsonResponse({'new_test': serialized_instance, 'update_url': update_url, 'detail_url': detail_url, 'delete_url': delete_url}, status=200)
-        else:
-            return JsonResponse({'error': form.errors}, status=400)
-    return JsonResponse({'error': 'not ajax request'}, status=400)
+    form = TestCreateForm(request.POST, request.FILES)
+    if form.is_valid():
+        form.instance.user = request.user
+        form.save()
+        print(form.instance)
+        return redirect('question-list', form.instance.id)
+    return redirect('my-test-list')
 
 
 @login_required(login_url='/accounts/login/')
 def my_test_update(request, test_id):
+    categories = Category.objects.all()
     test = get_object_or_404(Test, pk=test_id, user=request.user)
     if request.method == 'GET':
-        return JsonResponse({'test_title': test.title, 'test_description': test.description, 'test_is_active': test.is_active}, status=200)
+        form = TestUpdateForm(instance=test)
+        return render(request, 'quizzes/my_quiz_update.html', locals())
     elif request.method == 'POST':
         form = TestUpdateForm(request.POST, request.FILES, instance=test)
         if form.is_valid():
             form.save()
-        return redirect('my-test-list')
+            return redirect('my-test-list')
+        return render(request, 'quizzes/my_quiz_update.html', locals())
 
 
 @login_required(login_url='/accounts/login/')
@@ -56,6 +57,7 @@ def my_test_delete(request, test_id):
 
 @login_required(login_url='/accounts/login/')
 def question_list(request, test_id):
+    categories = Category.objects.all()
     test = get_object_or_404(Test, pk=test_id, user=request.user)
     question_form = QuestionCreateForm()
     question_update_form = QuestionCreateForm()
@@ -74,7 +76,6 @@ def question_create(request, test_id):
     if request.method == 'POST':
         test = get_object_or_404(Test, pk=test_id, user=request.user)
         question_form = QuestionCreateForm(request.POST)
-        answer_form = AnswerCreateForm(request.POST)
         if question_form.is_valid():
             question_form.instance.test = test
             question_instance = question_form.save()
@@ -171,20 +172,66 @@ def answer_delete(request, test_id, answer_id):
 
 
 @login_required(login_url='/accounts/login/')
-def check_answer(request, answer_id):
-    if request.is_ajax() and request.method == 'GET':
-        answer = get_object_or_404(Answer, pk=answer_id)
-        if answer.is_correct:
-            return JsonResponse({'is_correct': True})
-        return JsonResponse({'is_correct': False})
-    return JsonResponse({'error': 'not ajax request'}, status=400)
-
-
 def tests_list(request):
+    categories = Category.objects.all()
     tests = Test.objects.filter(is_active=True)
     return render(request, 'quizzes/quiz_list.html', locals())
 
 
+@login_required(login_url='/accounts/login/')
 def test_detail(request, test_id):
+    categories = Category.objects.all()
     test = get_object_or_404(Test, pk=test_id, is_active=True)
+    try:
+        test_result = TestResult.objects.get(test=test, user=request.user)
+    except ObjectDoesNotExist:
+        test_result = None
     return render(request, 'quizzes/quiz_detail.html', locals())
+
+
+@require_http_methods(["POST"])
+@login_required(login_url='/accounts/login/')
+def score_record(request, test_id):
+    test = get_object_or_404(Test, pk=test_id, is_active=True)
+    score = request.POST.get('score')
+    result, created = TestResult.objects.get_or_create(user=request.user, test=test, correct_answers=score)
+    if not created:
+        result.correct_answers = request.POST.get('score')
+        result.save()
+        return JsonResponse({'is_created': created}, status=200)
+    return JsonResponse({'is_created': created}, status=200)
+
+
+@require_http_methods(['POST'])
+@login_required(login_url='/accounts/login/')
+def user_answer_record(request, test_id):
+    test = get_object_or_404(Test, pk=test_id, is_active=True)
+    answer = Answer.objects.get(pk=request.POST.get('answer_id'))
+    question = answer.question
+    UserAnswer.objects.create(user=request.user, test=test, question=question, answer=answer)
+    return JsonResponse({'is_created': True}, status=200)
+
+
+@login_required(login_url='/accounts/login/')
+def category_detail(request, category_id):
+    category = get_object_or_404(Category, pk=category_id)
+    tests = category.tests.filter(is_active=True)
+    categories = Category.objects.all()
+    return render(request, 'quizzes/category_quiz_list.html', locals())
+
+
+@login_required(login_url='/accounts/login/')
+def test_info(request, test_id):
+    test = get_object_or_404(Test, pk=test_id, user=request.user, is_active=True)
+    test_results = test.test_results.all()
+    categories = Category.objects.all()
+    return render(request, 'quizzes/get_info.html', locals())
+
+
+@login_required(login_url='/accounts/login/')
+def test_info_detail(request, test_id, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    test = get_object_or_404(Test, pk=test_id, user=request.user, is_active=True)
+    user_answers = UserAnswer.objects.filter(test=test, user=user)
+    categories = Category.objects.all()
+    return render(request, 'quizzes/get_info_detail.html', locals())
