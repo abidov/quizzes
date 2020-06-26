@@ -13,8 +13,12 @@
 </li>
 {% endfor %}
 {% endif %}
-<li>
-  <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}" 
-     href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">{{provider.name}}</a>
-</li>
+<div class="text-center">
+  <div>
+  Sign Up or Sign In with Google:<i class="fas fa-long-arrow-alt-down"></i>
+  </div>
+  <a title="{{provider.name}}" class="socialaccount_provider {{provider.id}}" href="{% provider_login_url provider.id process=process scope=scope auth_params=auth_params %}">
+    <i class="fab fa-google"></i>
+  </a>
+</div>
 {% endfor %}

@@ -6,7 +6,8 @@
         <tr>
             <th scope="col">User</th>
             <th scope="col">Test</th>
-            <th scope="col">Correct Answers</th>
+            <th scope="col">Correct Answers Ratio</th>
+            <th scope="col">Percentage</th>
             <th scope="col">Date</th>
         </tr>
         </thead>
@@ -15,7 +16,8 @@
             <tr>
                 <th scope="row"><a href="{% url 'test-info-detail' test_id=test.id user_id=test_result.user.id %}">{{test_result.user.username}}</a></th>
                 <td>{{test_result.test.title}}</td>
-                <td>{{test_result.correct_answers}}</td>
+                <td>{{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</td>
+                <td>{{test_result.percentage}}%</td>
                 <td>{{test_result.created}}</td>
             </tr>
         {% endfor %}

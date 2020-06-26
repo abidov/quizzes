@@ -2,7 +2,7 @@
 {% block head_title %}{{test.title}}{% endblock %}
 {% block content %}
     {% if test_result %}
-        <p>Score: <span id="score">{{test_result.correct_answers}}</span></p>
+        <p>Score: <span id="score">{{test_result.percentage}}% {{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</span></p>
     {% else %}
         <form action="{% url 'result-create' test.id %}" data-url="{% url 'user-answer-create' test.id %}" id="gather-result">{% csrf_token %}
             <h3>{{test.title}}</h3>
@@ -24,6 +24,7 @@
             <button type="submit" form="gather-result">Send</button>
         </form>
     <p>Score: <span id="score"></span></p>
+    <div class="progress"></div>
     {% endif %}
     {% endblock %}
     {% block javascript %}
@@ -33,30 +34,19 @@
 
             $('#gather-result').on('submit', function (e){
                 e.preventDefault();
-        
+                
+                var test_result_instance_id;
+                var score = 0;
                 var gather_form = $(this);
                 var checked_answers_id = [];
                 for (var question_id of questions_id){
                     checked_answers_id.push(getRadioVal(this, `question${question_id}`));
                 }
-                var score = 0;
                 for (var checked_answer_id of checked_answers_id){
                     if ($(`#answer${checked_answer_id}`).data('iscorrect') == "True") {
                         score ++;
                     }
-                    $.ajax({
-                        type: "POST",
-                        url: gather_form.data('url'),
-                        data: {
-                            'answer_id': checked_answer_id,
-                        },
-                        headers: {
-                            "X-CSRFToken": csrftoken
-                        },
-                        cache: true,
-                    });
                 }
-                $('#score').text(score);
                 gather_form.css("display", "none");
                 $.ajax({
                     type: "POST",
@@ -66,6 +56,25 @@
                     },
                     headers: {
                         "X-CSRFToken": csrftoken
+                    },
+                    success: function (response) {
+                        percentage = response['percentage'] + '%';
+                        ratio = response['total_correct_answers'] + '/' + response['total_questions'];
+                        $('#score').text(percentage + ' ' + ratio);
+                        for (var checked_answer_id of checked_answers_id){
+                            $.ajax({
+                                type: "POST",
+                                url: gather_form.data('url'),
+                                data: {
+                                    'answer_id': checked_answer_id,
+                                    'test_result_instance_id': response['test_result_instance_id'],
+                                },
+                                headers: {
+                                    "X-CSRFToken": csrftoken
+                                },
+                                cache: true,
+                            });
+                        }
                     },
                     cache: true,
                 });

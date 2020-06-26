@@ -58,6 +58,7 @@ class TestResult(models.Model):
     user = models.ForeignKey(User, related_name='test_results', on_delete=models.CASCADE)
     test = models.ForeignKey(Test, related_name='test_results', on_delete=models.CASCADE)
     correct_answers = models.IntegerField(default=0)
+    percentage = models.DecimalField(max_digits=5, decimal_places=2)
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -67,26 +68,9 @@ class TestResult(models.Model):
 class UserAnswer(models.Model):
     user = models.ForeignKey(User, related_name='user_answers', on_delete=models.CASCADE)
     test = models.ForeignKey(Test, related_name='user_answers', on_delete=models.CASCADE)
+    test_result = models.ForeignKey(TestResult, related_name='user_answers', on_delete=models.CASCADE)
     question = models.ForeignKey(Question, related_name='user_answers', on_delete=models.CASCADE)
     answer = models.ForeignKey(Answer, related_name='user_answers', on_delete=models.CASCADE)
 
     def __str__(self):
         return self.user.username + ' answer' + ' on ' + self.question.problem
-
-
-class Like(models.Model):
-    user = models.ForeignKey(User, related_name='likes', on_delete=models.CASCADE)
-    test = models.ForeignKey(Test, related_name='likes', on_delete=models.CASCADE)
-
-    def __str__(self):
-        return f'{self.user.username}\'s likes on {self.test.title}'
-
-
-class Comment(models.Model):
-    user = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
-    test = models.ForeignKey(Test, related_name='comments', on_delete=models.CASCADE)
-    text = models.TextField()
-
-    def __str__(self):
-        return f'comment: {self.text} of {self.user.username} on {self.test.title}'
-

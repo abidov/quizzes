@@ -193,22 +193,37 @@ def test_detail(request, test_id):
 @login_required(login_url='/accounts/login/')
 def score_record(request, test_id):
     test = get_object_or_404(Test, pk=test_id, is_active=True)
+    questions = test.questions.all()
+    percentage = int(request.POST.get('score')) / len(questions) * 100
     score = request.POST.get('score')
-    result, created = TestResult.objects.get_or_create(user=request.user, test=test, correct_answers=score)
+    result, created = TestResult.objects.get_or_create(user=request.user,
+                                                       test=test,
+                                                       correct_answers=score,
+                                                       percentage=percentage)
     if not created:
         result.correct_answers = request.POST.get('score')
         result.save()
-        return JsonResponse({'is_created': created}, status=200)
-    return JsonResponse({'is_created': created}, status=200)
+        return JsonResponse({'percentage': round(percentage, 2),
+                             'total_questions': len(questions),
+                             'total_correct_answers': request.POST.get('score'),
+                             'test_result_instance_id': result.pk}, status=200)
+    return JsonResponse({'percentage': round(percentage, 2),
+                         'total_questions': len(questions),
+                         'total_correct_answers': request.POST.get('score'),
+                         'test_result_instance_id': result.pk}, status=200)
 
 
 @require_http_methods(['POST'])
 @login_required(login_url='/accounts/login/')
 def user_answer_record(request, test_id):
     test = get_object_or_404(Test, pk=test_id, is_active=True)
+    test_result = get_object_or_404(TestResult,
+                                    pk=request.POST.get('test_result_instance_id'),
+                                    user=request.user,
+                                    test=test)
     answer = Answer.objects.get(pk=request.POST.get('answer_id'))
     question = answer.question
-    UserAnswer.objects.create(user=request.user, test=test, question=question, answer=answer)
+    UserAnswer.objects.create(user=request.user, test=test, test_result=test_result, question=question, answer=answer)
     return JsonResponse({'is_created': True}, status=200)
 
 
