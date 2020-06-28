@@ -83,9 +83,13 @@ def question_create(request, test_id):
             test.save()
             delete_url = reverse('question-delete', kwargs={'test_id': test_id, 'question_id': question_instance.id})
             update_url = reverse('question-update', kwargs={'test_id': test_id, 'question_id': question_instance.id})
-            answer_create_url = reverse('answer-create', kwargs={'test_id': test_id, 'question_id': question_instance.id})
+            answer_create_url = reverse('answer-create', kwargs={'test_id': test_id,
+                                                                 'question_id': question_instance.id})
             serialized_instance = serializers.serialize('json', [question_instance])
-            return JsonResponse({'new_question': serialized_instance, 'delete_url': delete_url, 'update_url': update_url, 'answer_create_url': answer_create_url}, status=200)
+            return JsonResponse({'new_question': serialized_instance,
+                                 'delete_url': delete_url,
+                                 'update_url': update_url,
+                                 'answer_create_url': answer_create_url}, status=200)
         else:
             return JsonResponse({'error': question_form.errors}, status=400)
     return JsonResponse({'error': 'not ajax request'}, status=400)
@@ -131,7 +135,9 @@ def answer_create(request, test_id, question_id):
                 delete_url = reverse('answer-delete', kwargs={'test_id': test_id, 'answer_id': answer_instance.id})
                 update_url = reverse('answer-update', kwargs={'test_id': test_id, 'answer_id': answer_instance.id})
                 serialized_instance = serializers.serialize('json', [answer_instance])
-                return JsonResponse({'new_answer': serialized_instance, 'delete_url': delete_url, 'update_url': update_url})
+                return JsonResponse({'new_answer': serialized_instance,
+                                     'delete_url': delete_url,
+                                     'update_url': update_url}, status=200)
             else:
                 return JsonResponse({'error': answer_form.errors}, status=400)
     return JsonResponse({'error': 'not ajax request'})
