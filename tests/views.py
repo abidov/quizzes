@@ -182,10 +182,7 @@ def tests_list(request):
 def test_detail(request, test_id):
     categories = Category.objects.all()
     test = get_object_or_404(Test, pk=test_id, is_active=True)
-    try:
-        test_result = TestResult.objects.get(test=test, user=request.user)
-    except ObjectDoesNotExist:
-        test_result = None
+    test_results = TestResult.objects.filter(test=test, user=request.user)
     return render(request, 'quizzes/quiz_detail.html', locals())
 
 
@@ -196,17 +193,7 @@ def score_record(request, test_id):
     questions = test.questions.all()
     percentage = int(request.POST.get('score')) / len(questions) * 100
     score = request.POST.get('score')
-    result, created = TestResult.objects.get_or_create(user=request.user,
-                                                       test=test,
-                                                       correct_answers=score,
-                                                       percentage=percentage)
-    if not created:
-        result.correct_answers = request.POST.get('score')
-        result.save()
-        return JsonResponse({'percentage': round(percentage, 2),
-                             'total_questions': len(questions),
-                             'total_correct_answers': request.POST.get('score'),
-                             'test_result_instance_id': result.pk}, status=200)
+    result = TestResult.objects.create(user=request.user, test=test, correct_answers=score, percentage=percentage)
     return JsonResponse({'percentage': round(percentage, 2),
                          'total_questions': len(questions),
                          'total_correct_answers': request.POST.get('score'),

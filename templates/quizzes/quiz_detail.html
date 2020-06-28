@@ -1,8 +1,32 @@
 {% extends 'base.html' %}
 {% block head_title %}{{test.title}}{% endblock %}
 {% block content %}
-    {% if test_result %}
-        <p>Score: <span id="score">{{test_result.percentage}}% {{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</span></p>
+    {% if test_results %}
+        <form style="display: none;" action="{% url 'result-create' test.id %}" data-url="{% url 'user-answer-create' test.id %}" id="gather-result">{% csrf_token %}
+            <h3>{{test.title}}</h3>
+            <ol>
+                {% for question in test.questions.all %}
+                <li>
+                    {{question.problem}}
+                    <ul>
+                    {% for answer in question.answers.all %}
+                        <li>
+                            <input id="answer{{answer.id}}" data-iscorrect="{{answer.is_correct}}" required class="form-check-input" type="radio" name="question{{question.id}}" id="answer{{answer.id}}" value="{{answer.id}}">
+                            <label class="form-check-label" for="answer{{answer.id}}">{{answer.text}}</label>
+                        </li>
+                    {% endfor %}
+                    </ul>
+                </li>
+                {% endfor %}
+            </ol>
+            <button type="submit" form="gather-result">Send</button>
+        </form>
+        <div id="scores">
+            {% for test_result in test_results %}
+            <p id="score">{{test_result.percentage}}% {{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</p>
+            {% endfor %}
+        </div>
+        <button type="button" id="quiz-again">Click to pass quiz again</button>
     {% else %}
         <form action="{% url 'result-create' test.id %}" data-url="{% url 'user-answer-create' test.id %}" id="gather-result">{% csrf_token %}
             <h3>{{test.title}}</h3>
@@ -24,7 +48,6 @@
             <button type="submit" form="gather-result">Send</button>
         </form>
     <p>Score: <span id="score"></span></p>
-    <div class="progress"></div>
     {% endif %}
     {% endblock %}
     {% block javascript %}
@@ -60,7 +83,7 @@
                     success: function (response) {
                         percentage = response['percentage'] + '%';
                         ratio = response['total_correct_answers'] + '/' + response['total_questions'];
-                        $('#score').text(percentage + ' ' + ratio);
+                        $('#scores').append(`<p id="score">${percentage} ${ratio}</p>`);
                         for (var checked_answer_id of checked_answers_id){
                             $.ajax({
                                 type: "POST",
@@ -75,6 +98,8 @@
                                 cache: true,
                             });
                         }
+                        $("#quiz-again").css("display", "inline-block");
+                        $("#gather-result").trigger('reset');
                     },
                     cache: true,
                 });
@@ -94,5 +119,10 @@
                 }
                 return val;
             }
+
+            $("#quiz-again").on('click', function () {
+                $("#gather-result").css("display", "block");
+                $(this).css("display", "none");
+            });
         </script>
     {% endblock %}
