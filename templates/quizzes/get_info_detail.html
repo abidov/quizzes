@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1 class="text-center">{{user.username}}'s result to the "{{test.title}}" test</h1>
+<h1 class="text-center">{{test_result.user.username}}'s result to the "{{test.title}}" quiz. {{test_result.created}}</h1>
 <table class="table">
     <thead>
         <tr>

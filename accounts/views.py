@@ -1,15 +1,18 @@
 from django.views import generic
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import get_object_or_404, render
 from tests.models import Category, Test, TestResult, UserAnswer
 from .models import Profile
 
 
-class ProfileView(generic.DetailView, generic.UpdateView):
+class ProfileView(LoginRequiredMixin, generic.DetailView, generic.UpdateView):
     template_name = 'account/profile.html'
     success_url = reverse_lazy('account-profile')
     model = Profile
     fields = ['phone_number', 'first_name', 'last_name']
+    login_url = '/accounts/login/'
+    redirect_field_name = 'login'
 
     def get_object(self, queryset=None):
         return Profile.objects.get(user=self.request.user)

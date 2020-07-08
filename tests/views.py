@@ -1,13 +1,11 @@
 from django.shortcuts import get_object_or_404, render, redirect
-from django.core.exceptions import ObjectDoesNotExist
 from django.urls import reverse
 from django.http import JsonResponse
 from django.core import serializers
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.models import User
+from django.views.decorators.http import require_http_methods
 from .models import Test, Question, Answer, TestResult, UserAnswer, Category
 from .forms import TestCreateForm, TestUpdateForm, QuestionCreateForm, AnswerCreateForm
-from django.views.decorators.http import require_http_methods
 
 
 @login_required(login_url='/accounts/login/')
@@ -68,6 +66,7 @@ def question_list(request, test_id):
                                                            'question_update_form': question_update_form,
                                                            'answer_form': answer_form,
                                                            'answer_update_form': answer_update_form,
+                                                           'categories': categories,
                                                            })
 
 
@@ -237,9 +236,9 @@ def test_info(request, test_id):
 
 
 @login_required(login_url='/accounts/login/')
-def test_info_detail(request, test_id, user_id):
-    user = get_object_or_404(User, pk=user_id)
-    test = get_object_or_404(Test, pk=test_id, user=request.user, is_active=True)
-    user_answers = UserAnswer.objects.filter(test=test, user=user)
+def test_info_detail(request, test_result_id):
+    test_result = get_object_or_404(TestResult, pk=test_result_id)
+    test = get_object_or_404(Test, pk=test_result.test.id, user=request.user, is_active=True)
+    user_answers = UserAnswer.objects.filter(test=test, user=test_result.user, test_result=test_result)
     categories = Category.objects.all()
     return render(request, 'quizzes/get_info_detail.html', locals())

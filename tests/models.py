@@ -61,6 +61,9 @@ class TestResult(models.Model):
     percentage = models.DecimalField(max_digits=5, decimal_places=2)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-created']
+
     def __str__(self):
         return f'{self.user.username} {self.test.title} result'
 

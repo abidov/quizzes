@@ -70,7 +70,7 @@
                     </div>
                     <li id="answer{{answer.id}}" {% if answer.is_correct %} class="list-group-item list-group-item-success" {% else %} class="list-group-item list-group-item-danger">{% endif %}
                         <label class="form-check-label" for="answer{{answer.id}}">{{answer.text}}</label>
-                        <div class="btn btn-danger answer-delete-button m-1" data-url="{% url 'answer-delete' test_id=test.id answer_id=answer.id %}" data-id="{{answer.id}}">delete answer</div>
+                        <div class="btn btn-danger answer-delete-button m-1 float-right" data-url="{% url 'answer-delete' test_id=test.id answer_id=answer.id %}" data-id="{{answer.id}}">delete answer</div>
                         <button data-url="{% url 'answer-update' test_id=test.id answer_id=answer.id %}" data-id="{{answer.id}}" class="btn btn-success m-1 answer-update-button">Update</button>
                     </li>
                 {% endfor %}
@@ -164,7 +164,7 @@
                             </div>
                         </div>
                         ${fields["problem"]||""}
-                        <div class="btn btn-danger question-delete-button m-1" data-id="${question_id}" data-url="${delete_url}">delete question</div>
+                        <div class="btn btn-danger question-delete-button m-1 float-right" data-id="${question_id}" data-url="${delete_url}">delete question</div>
                         <button data-url="${update_url}" data-id="${question_id}" class="btn btn-success m-1 question-update-button">Update</button>
                         <ul id="answers-list${question_id}">
                         </ul>

@@ -4,6 +4,7 @@
     {% if test_results %}
         <form style="display: none;" action="{% url 'result-create' test.id %}" data-url="{% url 'user-answer-create' test.id %}" id="gather-result">{% csrf_token %}
             <h3>{{test.title}}</h3>
+            <h5>{{test.description}}</h5>
             <ol>
                 {% for question in test.questions.all %}
                 <li>
@@ -30,6 +31,7 @@
     {% else %}
         <form action="{% url 'result-create' test.id %}" data-url="{% url 'user-answer-create' test.id %}" id="gather-result">{% csrf_token %}
             <h3>{{test.title}}</h3>
+            <h5>{{test.description}}</h5>
             <ol>
                 {% for question in test.questions.all %}
                 <li>
@@ -47,7 +49,7 @@
             </ol>
             <button type="submit" form="gather-result">Send</button>
         </form>
-    <p>Score: <span id="score"></span></p>
+    <div id="scores"></div>
     {% endif %}
     {% endblock %}
     {% block javascript %}
@@ -83,7 +85,7 @@
                     success: function (response) {
                         percentage = response['percentage'] + '%';
                         ratio = response['total_correct_answers'] + '/' + response['total_questions'];
-                        $('#scores').append(`<p id="score">${percentage} ${ratio}</p>`);
+                        $('#scores').prepend(`<p id="score">${percentage} ${ratio}</p>`);
                         for (var checked_answer_id of checked_answers_id){
                             $.ajax({
                                 type: "POST",
@@ -100,6 +102,7 @@
                         }
                         $("#quiz-again").css("display", "inline-block");
                         $("#gather-result").trigger('reset');
+                        $(".container").append(`<button type="button" id="quiz-again">Click to pass quiz again</button>`)
                     },
                     cache: true,
                 });
@@ -120,7 +123,7 @@
                 return val;
             }
 
-            $("#quiz-again").on('click', function () {
+            $(document.body).on('click', "#quiz-again", function () {
                 $("#gather-result").css("display", "block");
                 $(this).css("display", "none");
             });

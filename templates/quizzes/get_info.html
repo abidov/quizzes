@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
-<h1 class="text-center">Results of "{{test.title}}" test</h1>
+<h1 class="text-center">Results of "{{test.title}}" quiz</h1>
 <table class="table">
     <thead>
         <tr>
@@ -14,7 +14,7 @@
         <tbody>
         {% for test_result in test_results %}
             <tr>
-                <th scope="row"><a href="{% url 'test-info-detail' test_id=test.id user_id=test_result.user.id %}">{{test_result.user.username}}</a></th>
+                <th scope="row"><a href="{% url 'test-info-detail' test_result.id %}">{{test_result.user.username}}</a></th>
                 <td>{{test_result.test.title}}</td>
                 <td>{{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</td>
                 <td>{{test_result.percentage}}%</td>

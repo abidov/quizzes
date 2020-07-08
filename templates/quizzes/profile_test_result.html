@@ -1,24 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
-{% for test_result in test_results %}
-    <h1 class="text-center">{{user.username}}'s results. "{{test_result.test.title}}" quiz</h1>
-    <table class="table">
-        <thead>
+<h1 class="text-center">{{user.username}}'s results</h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Test</th>
+            <th scope="col">Correct Answers Ratio</th>
+            <th scope="col">Percentage</th>
+            <th scope="col">Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for test_result in test_results %}
             <tr>
-                <th scope="col">Test</th>
-                <th scope="col">Correct Answers Ratio</th>
-                <th scope="col">Percentage</th>
-                <th scope="col">Date</th>
+                <td><a href="{% url 'profile-test-result-detail' test_id=test_result.test.id test_result_id=test_result.id%}">{{test_result.test.title}}</a></td>
+                <td>{{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</td>
+                <td>{{test_result.percentage}}%</td>
+                <td>{{test_result.created}}</td>
             </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><a href="{% url 'profile-test-result-detail' test_id=test_result.test.id test_result_id=test_result.id%}">{{test_result.test.title}}</a></td>
-                    <td>{{test_result.correct_answers}}/{{test_result.test.questions.all|length}}</td>
-                    <td>{{test_result.percentage}}%</td>
-                    <td>{{test_result.created}}</td>
-                </tr>
-        </tbody>
-    </table>
-{% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
 {% endblock %}

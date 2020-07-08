@@ -25,5 +25,5 @@ urlpatterns = [
     path('category/<int:category_id>/', views.category_detail, name='category-detail'),
 
     path('my/<int:test_id>/info', views.test_info, name='test-info'),
-    path('my/<int:test_id>/<int:user_id>/info/detail/', views.test_info_detail, name='test-info-detail'),
+    path('my/<int:test_result_id>/info/detail/', views.test_info_detail, name='test-info-detail'),
 ]
